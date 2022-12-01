@@ -49,6 +49,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ReplayServiceImpl implements ReplayService {
 
+    /** 回放的URL */
     @Value("${repeat.repeat.url}")
     private String repeatURL;
 
@@ -68,19 +69,26 @@ public class ReplayServiceImpl implements ReplayService {
         Optional.ofNullable(params.getIp()).orElseThrow(() -> new RuntimeException("ip can not be null"));
         Optional.ofNullable(params.getAppName()).orElseThrow(() -> new RuntimeException("appName can not be null"));
         Optional.ofNullable(params.getTraceId()).orElseThrow(() -> new RuntimeException("traceId can not be null"));
+
+        // 根据应用名和IP查询模块信息
         RepeaterResult<ModuleInfoBO> result = moduleInfoService.query(params.getAppName(), params.getIp());
         if (!result.isSuccess() || result.getData() == null) {
             return ResultHelper.copy(result);
         }
+
         params.setPort(result.getData().getPort());
         params.setEnvironment(result.getData().getEnvironment());
+        // 根据tradeId查询快照记录
         final Record record = recordDao.selectByAppNameAndTraceId(params.getAppName(), params.getTraceId());
         if (record == null) {
             return RepeaterResult.builder().success(false).message("data does not exist").build();
         }
+
+        // 生成回放的ID
         if (StringUtils.isEmpty(params.getRepeatId())) {
             params.setRepeatId(TraceGenerator.generate());
         }
+
         // save replay record
         Replay replay = saveReplay(record, params);
         if (replay == null) {
@@ -166,6 +174,7 @@ public class ReplayServiceImpl implements ReplayService {
         } catch (SerializeException e) {
             return RepeaterResult.builder().success(false).message(e.getMessage()).build();
         }
+
         HttpUtil.Resp resp = HttpUtil.doPost(String.format(repeatURL,params.getIp(),params.getPort()), requestParams);
         if (resp.isSuccess()) {
             return RepeaterResult.builder().success(true).message("operate success").data(meta.getRepeatId()).build();
@@ -173,6 +182,13 @@ public class ReplayServiceImpl implements ReplayService {
         return RepeaterResult.builder().success(false).message("operate failed").data(resp).build();
     }
 
+    /**
+     * 保存回放记录
+     *
+     * @param record
+     * @param params
+     * @return
+     */
     private Replay saveReplay(Record record, ReplayParams params) {
         Replay replay = new Replay();
         replay.setRecord(record);

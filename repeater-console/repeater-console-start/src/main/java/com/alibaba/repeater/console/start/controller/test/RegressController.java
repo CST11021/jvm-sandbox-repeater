@@ -54,7 +54,7 @@ public class RegressController {
 
 
     /**
-     * 单线程java示例
+     * 单线程java示例：每次调用按顺序返回：xxx是世界上最好的语言!
      *
      * @return
      */

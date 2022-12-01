@@ -61,6 +61,12 @@ public class ModuleConfigController {
         return "config/edit";
     }
 
+    /**
+     * 配置页面
+     *
+     * @param model
+     * @return
+     */
     @RequestMapping("add.htm")
     public String add(Model model) {
         RepeaterConfig defaultConf = new RepeaterConfig();
@@ -83,12 +89,24 @@ public class ModuleConfigController {
         return "config/add";
     }
 
+    /**
+     * 保存和更新模块配置
+     *
+     * @param params
+     * @return
+     */
     @RequestMapping("saveOrUpdate.json")
     @ResponseBody
     public RepeaterResult<ModuleConfigBO> doAdd(@ModelAttribute("requestParams") ModuleConfigParams params) {
         return moduleConfigService.saveOrUpdate(params);
     }
 
+    /**
+     * 推送模块配置到sandbox沙箱
+     *
+     * @param params
+     * @return
+     */
     @RequestMapping("push.json")
     @ResponseBody
     public RepeaterResult<ModuleConfigBO> push(@ModelAttribute("requestParams") ModuleConfigParams params) {

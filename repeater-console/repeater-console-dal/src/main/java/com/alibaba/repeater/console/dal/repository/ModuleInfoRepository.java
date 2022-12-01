@@ -33,7 +33,7 @@ public interface ModuleInfoRepository extends JpaRepository<ModuleInfo, Long>, J
 
     @Modifying
     @Query(
-            "update ModuleInfo set gmtModified =  :#{#moduleInfo.gmtModified}" +
+            "update ModuleInfo set gmtModified =  :#{#moduleInfo.gmtModified}, port = :#{#moduleInfo.port}" +
                     " where appName =  :#{#moduleInfo.appName}" +
                     " and ip = :#{#moduleInfo.ip}"
     )

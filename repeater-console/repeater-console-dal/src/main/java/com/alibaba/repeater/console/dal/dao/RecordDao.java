@@ -31,6 +31,13 @@ public class RecordDao {
         return recordRepository.save(record);
     }
 
+    /**
+     * 根据应用名和tradeId查询
+     *
+     * @param appName
+     * @param traceId
+     * @return
+     */
     public Record selectByAppNameAndTraceId(String appName, String traceId) {
         return recordRepository.findByAppNameAndTraceId(appName, traceId);
     }

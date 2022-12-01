@@ -156,10 +156,11 @@
                                         <th>应用名</th>
                                         <th>环境</th>
                                         <th>机器IP</th>
-                                        <th>端口号</th>
+                                        <th>sandbox沙箱端口</th>
                                         <th>版本号</th>
                                         <th>状态</th>
                                         <th>心跳时间</th>
+                                        <th>创建时间</th>
                                         <th width="100px">操作</th>
                                     </tr>
                                     </thead>
@@ -179,6 +180,7 @@
                                                 #end
                                             </td>
                                             <td style="vertical-align: middle">$!{data.gmtModified}</td>
+                                            <td style="vertical-align: middle">$!{data.gmtCreate}</td>
                                             <td style="vertical-align: middle">
                                                 #if($!{data.status.desc}=='已激活')
                                                     <button class="btn btn-warning btn-xs btn-frozen" data-toggle="tooltip"

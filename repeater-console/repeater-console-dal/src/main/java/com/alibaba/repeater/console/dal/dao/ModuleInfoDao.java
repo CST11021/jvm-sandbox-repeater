@@ -55,10 +55,12 @@ public class ModuleInfoDao {
         if (moduleInfoRepository.updateByAppNameAndIp(params) > 0) {
             return params;
         }
+        // 保存并提交事务
         return moduleInfoRepository.saveAndFlush(params);
     }
 
     public ModuleInfo saveAndFlush(ModuleInfo params) {
+        // 保存并提交事务
         return moduleInfoRepository.saveAndFlush(params);
     }
 
