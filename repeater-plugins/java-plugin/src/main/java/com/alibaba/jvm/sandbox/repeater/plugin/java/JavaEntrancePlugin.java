@@ -1,7 +1,5 @@
 package com.alibaba.jvm.sandbox.repeater.plugin.java;
 
-import java.util.List;
-
 import com.alibaba.jvm.sandbox.repeater.plugin.api.InvocationProcessor;
 import com.alibaba.jvm.sandbox.repeater.plugin.core.impl.AbstractInvokePluginAdapter;
 import com.alibaba.jvm.sandbox.repeater.plugin.core.model.EnhanceModel;
@@ -10,10 +8,11 @@ import com.alibaba.jvm.sandbox.repeater.plugin.domain.InvokeType;
 import com.alibaba.jvm.sandbox.repeater.plugin.domain.RepeaterConfig;
 import com.alibaba.jvm.sandbox.repeater.plugin.exception.PluginLifeCycleException;
 import com.alibaba.jvm.sandbox.repeater.plugin.spi.InvokePlugin;
-
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.kohsuke.MetaInfServices;
+
+import java.util.List;
 
 /**
  * Java入口插件
@@ -26,9 +25,17 @@ public class JavaEntrancePlugin extends AbstractInvokePluginAdapter {
 
     private RepeaterConfig config;
 
+    /**
+     * 返回需要拦截的切面集合，这里从RepeaterConfig配置里获取
+     *
+     * @return
+     */
     @Override
     protected List<EnhanceModel> getEnhanceModels() {
-        if (config == null || CollectionUtils.isEmpty(config.getJavaEntranceBehaviors())) { return null;}
+        if (config == null || CollectionUtils.isEmpty(config.getJavaEntranceBehaviors())) {
+            return null;
+        }
+
         List<EnhanceModel> ems = Lists.newArrayList();
         for (Behavior behavior : config.getJavaEntranceBehaviors()) {
             ems.add(EnhanceModel.convert(behavior));
@@ -46,11 +53,21 @@ public class JavaEntrancePlugin extends AbstractInvokePluginAdapter {
         return InvokeType.JAVA;
     }
 
+    /**
+     * 插件标识
+     *
+     * @return
+     */
     @Override
     public String identity() {
         return "java-entrance";
     }
 
+    /**
+     * 是否是流量入口插件
+     *
+     * @return
+     */
     @Override
     public boolean isEntrance() {
         return true;

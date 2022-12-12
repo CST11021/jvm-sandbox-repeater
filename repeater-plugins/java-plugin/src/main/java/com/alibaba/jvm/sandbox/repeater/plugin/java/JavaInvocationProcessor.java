@@ -17,6 +17,12 @@ class JavaInvocationProcessor extends DefaultInvocationProcessor {
         super(type);
     }
 
+    /**
+     * 返回执行切点前的拦截信息(这里抽象为Identity)，记录：类实例对象、方法、入参、入参类型等信息
+     *
+     * @param event 事件
+     * @return
+     */
     @Override
     public Identity assembleIdentity(BeforeEvent event) {
         try {

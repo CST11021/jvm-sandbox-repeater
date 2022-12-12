@@ -23,19 +23,17 @@ public class EnhanceModel {
     /**
      * 增强类表达式，支持通配符
      *
-     * @see com.alibaba.jvm.sandbox.api.util.GaStringUtils#matching
+     * @see com.alibaba.jvm.sandbox.api.util.GaStringUtils#matching(String, String)
      */
     private String classPattern;
 
     /**
-     * 增强方法表达式，，支持通配符
+     * 增强方法表达式，支持通配符
      */
     private MethodPattern[] methodPatterns;
 
     /**
-     * 观察的事件
-     * <p>
-     * 一般情况需要关注 BEFORE/RETURN/THROW 事件，构成一个方法的around，完成方法入参/返回值/异常的录制
+     * 观察的事件：一般情况需要关注 BEFORE/RETURN/THROW 事件，构成一个方法的around，完成方法入参/返回值/异常的录制
      * <p>
      * 如果基于回调的情况，例如onRequest/onResponse，则只需关注BEFORE事件，通过两个BEFORE去组装，但注意这种情况需要重写{@link
      * com.alibaba.jvm.sandbox.repeater.plugin.core.impl.api.DefaultEventListener#isEntranceFinish(Event)}方法
@@ -92,6 +90,9 @@ public class EnhanceModel {
         return this.includeSubClasses;
     }
 
+    /**
+     * 创建EnhanceModel的Builder
+     */
     public static class EnhanceModelBuilder {
         private String classPattern;
         private EnhanceModel.MethodPattern[] methodPatterns;
@@ -131,6 +132,9 @@ public class EnhanceModel {
         }
     }
 
+    /**
+     * 通过模式匹配，表示一些列方法的集合
+     */
     public static class MethodPattern {
 
         String methodName;
@@ -171,6 +175,9 @@ public class EnhanceModel {
             return this.annotationTypes;
         }
 
+        /**
+         * 用于创建EnhanceModel.MethodPattern对象的Builder
+         */
         public static class MethodPatternBuilder {
             private String methodName;
             private String[] parameterType;

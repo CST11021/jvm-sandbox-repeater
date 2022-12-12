@@ -2,7 +2,16 @@ package com.alibaba.jvm.sandbox.repeater.plugin.domain;
 
 
 /**
- * <p>
+ * 封装如下的配置：
+ * {
+ *     ...
+ *     "javaEntranceBehaviors" : [{
+ *          "classPattern" : "cn.gov.zlb.finance.pay.facade.AccountFacadeImpl",
+ *          "methodPatterns" : ["*"],
+ *          "includeSubClasses" : false
+ *      }]
+ *     ...
+ * }
  *
  * @author zhaoyb1990
  */

@@ -35,8 +35,11 @@ https://segmentfault.com/a/1190000041686449?utm_source=sf-similar-article
 #### 第一步：jvm-sandbox-repeater环境准备
 
 ①下载工程：https://github.com/CST11021/jvm-sandbox-repeater.git 
+
 ②切换分支：源码工程有bug，需要使用 whz-opt 分支进行打包
+
 ③执行工程bin目录下的package.sh脚本，执行命令：sh package.sh
+
 ④将打包生成的repeater-stable-bin.tar压缩包解压到 ~/.sandbox-module 目录（如果没有该目录需要创建该目录）
 
 ⑤创建一个repeater库，并初始化库表脚本，脚本如下（该脚本在repeater工程的repeater-console-dal模块下的resources目录）：
@@ -303,14 +306,40 @@ degrade：是否执行录制降级策略，开启之后，不进行录制，只�
 exceptionThreshold：异常发生阈值；默认1000，当感知到异常次数超过阈值后，会降级模块
 sampleRate：采样率；最小力度万分之一，10000 代表 100%
 pluginsPath：插件地址
-httpEntrancePatterns：由于HTTP接口的量太大（前后端未分离的情况可能还有静态资源）因此必须走白名单匹配模式才录制
-javaEntranceBehaviors：java入口插件动态增强的行为
-javaSubInvokeBehaviors：java子调用插件动态增强的行为
+httpEntrancePatterns：由于HTTP接口的量太大（前后端未分离的情况可能还有静态资源）因此必须走白名单匹配模式才录制，这里配置的是要录制的URI
+javaEntranceBehaviors：用于配置要录制的java切面入口，注意，这里需要配置的是mock的实现类，不能配置为接口
+javaSubInvokeBehaviors：java子调用插件动态增强的行为，注意，这里需要配置的是mock的实现类，不能配置为接口
 pluginIdentities：需要启动的插件
 repeatIdentities：回放器插件
 ```
 
+## 3、配置mybastic的Mock
 
+只需在pluginIdentities中添加mybatis插件即可
+
+```json
+{
+    "useTtl" : true,
+    "degrade" : false,
+    "exceptionThreshold" : 1000,
+    "sampleRate" : 10000,
+    "pluginsPath" : null,
+    "httpEntrancePatterns" : [ "^/zlb/api/pay/bankCard/bank/list.*$", "^/zlb/api/pay/bankCard.*$"],
+    "javaEntranceBehaviors" : [
+        
+    ],
+    "javaSubInvokeBehaviors" : [],
+    "pluginIdentities" : [
+      "http",
+      "java-entrance",
+      "java-subInvoke",
+      "mybatis",
+      "ibatis"
+    ],
+    "repeatIdentities" : ["java", "http"]
+}
+```
+}
 
 
 

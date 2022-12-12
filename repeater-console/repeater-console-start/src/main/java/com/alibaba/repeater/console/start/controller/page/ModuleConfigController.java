@@ -102,6 +102,19 @@ public class ModuleConfigController {
     }
 
     /**
+     * 保存和更新模块配置
+     *
+     * @param params
+     * @return
+     */
+    @RequestMapping("updateAndPush.json")
+    @ResponseBody
+    public RepeaterResult<ModuleConfigBO> updateAndPush(@ModelAttribute("requestParams") ModuleConfigParams params) {
+        moduleConfigService.saveOrUpdate(params);
+        return moduleConfigService.push(params);
+    }
+
+    /**
      * 推送模块配置到sandbox沙箱
      *
      * @param params

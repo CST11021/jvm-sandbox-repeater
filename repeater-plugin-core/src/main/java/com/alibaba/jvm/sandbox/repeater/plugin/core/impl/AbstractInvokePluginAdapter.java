@@ -1,8 +1,5 @@
 package com.alibaba.jvm.sandbox.repeater.plugin.core.impl;
 
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.alibaba.jvm.sandbox.api.listener.EventListener;
 import com.alibaba.jvm.sandbox.api.listener.ext.EventWatchBuilder;
 import com.alibaba.jvm.sandbox.api.listener.ext.EventWatchBuilder.IBuildingForBehavior;
@@ -15,12 +12,14 @@ import com.alibaba.jvm.sandbox.repeater.plugin.core.model.EnhanceModel;
 import com.alibaba.jvm.sandbox.repeater.plugin.domain.RepeaterConfig;
 import com.alibaba.jvm.sandbox.repeater.plugin.exception.PluginLifeCycleException;
 import com.alibaba.jvm.sandbox.repeater.plugin.spi.InvokePlugin;
-
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * {@link AbstractInvokePluginAdapter}是{@link InvokePlugin}的抽象适配，提供了标准的模块生命周期处理流程；
@@ -55,8 +54,7 @@ public abstract class AbstractInvokePluginAdapter implements InvokePlugin {
     }
 
     @Override
-    public void watch(ModuleEventWatcher watcher,
-                      InvocationListener listener) throws PluginLifeCycleException {
+    public void watch(ModuleEventWatcher watcher, InvocationListener listener) throws PluginLifeCycleException {
         this.watcher = watcher;
         this.listener = listener;
         watchIfNecessary();
@@ -74,8 +72,7 @@ public abstract class AbstractInvokePluginAdapter implements InvokePlugin {
     }
 
     @Override
-    public void reWatch(ModuleEventWatcher watcher,
-                        InvocationListener listener) throws PluginLifeCycleException {
+    public void reWatch(ModuleEventWatcher watcher, InvocationListener listener) throws PluginLifeCycleException {
         this.unWatch(watcher, listener);
         watch(watcher, listener);
     }

@@ -8,11 +8,16 @@ import com.google.common.collect.Lists;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -22,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author zhaoyb1990
  */
 @Service("regressService")
-public class RegressServiceImpl implements RegressService {
+public class RegressServiceImpl implements RegressService, InitializingBean {
 
     private AtomicInteger sequence = new AtomicInteger(0);
 
@@ -33,6 +38,22 @@ public class RegressServiceImpl implements RegressService {
 
     {
         cacheManager = CacheManager.create(RegressServiceImpl.class.getClassLoader().getResourceAsStream("ehcache.xml"));
+    }
+
+    /**
+     * 添加一个定时任务，这样调用 RegressServiceImpl#getRegress(java.lang.String) 的流量也能录制了
+     *
+     * @throws Exception
+     */
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        // 执行任务：5s 后开始执行，每 5s 执行一次
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+            String date = DateFormatUtils.format(new Date(), "yyyy-mm-dd HH:mm:ss");
+            // getRegress(date);
+            // System.out.println("执行: " + date);
+        }, 5, 60, TimeUnit.SECONDS);
     }
 
     @Override

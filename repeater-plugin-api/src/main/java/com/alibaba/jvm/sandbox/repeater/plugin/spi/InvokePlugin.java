@@ -33,7 +33,10 @@ public interface InvokePlugin {
     String identity();
 
     /**
-     * 是否是入口流量插件
+     * 是否是入口流量插件，是流量入口的插件有：
+     * com.alibaba.jvm.sandbox.repater.plugin.http.HttpPlugin
+     * com.alibaba.jvm.sandbox.repeater.plugin.java.JavaEntrancePlugin
+     * com.alibaba.jvm.sandbox.repeater.plugin.dubbo.DubboProviderPlugin
      *
      * @return true/false
      */
@@ -68,8 +71,7 @@ public interface InvokePlugin {
      * @param listener invocation的监听者
      * @throws PluginLifeCycleException 插件周期异常
      */
-    void watch(ModuleEventWatcher watcher,
-               InvocationListener listener) throws PluginLifeCycleException;
+    void watch(ModuleEventWatcher watcher, InvocationListener listener) throws PluginLifeCycleException;
 
     /**
      * 删除插件
@@ -77,8 +79,7 @@ public interface InvokePlugin {
      * @param watcher  增强器
      * @param listener invocation的监听者
      */
-    void unWatch(ModuleEventWatcher watcher,
-                 InvocationListener listener);
+    void unWatch(ModuleEventWatcher watcher, InvocationListener listener);
 
     /**
      * 重新初始化 (例如:推送配置之后，需要重新增强代码)
@@ -87,8 +88,7 @@ public interface InvokePlugin {
      * @param listener invocation的监听者
      * @throws PluginLifeCycleException 插件周期异常
      */
-    void reWatch(ModuleEventWatcher watcher,
-                 InvocationListener listener) throws PluginLifeCycleException;
+    void reWatch(ModuleEventWatcher watcher, InvocationListener listener) throws PluginLifeCycleException;
 
     /**
      * 被冻结

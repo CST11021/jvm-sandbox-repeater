@@ -22,6 +22,11 @@ import java.util.List;
 @MetaInfServices(InvokePlugin.class)
 public class HttpPlugin extends AbstractInvokePluginAdapter {
 
+    /**
+     * 返回需要拦截的切面集合，这里从RepeaterConfig配置里获取
+     *
+     * @return
+     */
     @Override
     protected List<EnhanceModel> getEnhanceModels() {
         // 拦截javax.servlet.http.HttpServlet#service(HttpServletRequest req, HttpServletResponse resp)
@@ -29,6 +34,7 @@ public class HttpPlugin extends AbstractInvokePluginAdapter {
                 .methodName("service")
                 .parameterType(new String[]{"javax.servlet.http.HttpServletRequest", "javax.servlet.http.HttpServletResponse"})
                 .build();
+
         EnhanceModel em = EnhanceModel.builder()
                 .classPattern("javax.servlet.http.HttpServlet")
                 .methodPatterns(new EnhanceModel.MethodPattern[]{mp})

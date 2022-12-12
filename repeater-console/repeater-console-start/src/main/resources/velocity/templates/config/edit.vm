@@ -117,12 +117,17 @@
                             <h5 class="card-title text-blue">
                                 配置管理 <i class="fa fa-cogs"></i>
                             </h5>
-                            <div class="card-tools">
-                                <button class="btn btn-primary btn-sm float-right"
-                                        data-loading-text="searching" id="add-config-btn" >
-                                    保存
-                                </button>
-                            </div>
+##                            <div class="card-tools">
+##                                <button class="btn btn-primary btn-sm float-right"
+##                                        data-loading-text="searching" id="add-config-btn" >
+##                                    保存
+##                                </button>
+##                            </div>
+                            <button class="btn btn-primary btn-sm float-right"
+                                    data-loading-text="searching" id="add-config-and-push-btn" >
+                                保存并生效
+                            </button>
+
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -233,6 +238,40 @@
                 success: function (res) {
                     hideLoading(10)
                     window.location.href = "//" + host + "/config/detail.htm?appName=" + appName +"&environment="+environment;
+                },
+                dataType: 'json',
+                error: function (XMLHttpRequest) {
+                    hideLoading(10)
+                    notice(JSON.stringify(XMLHttpRequest), false);
+                }
+            });
+        })
+
+        $("#add-config-and-push-btn").on('click', function () {
+            var appName = $.trim($("#appName").val())
+            if (appName === "") {
+                notice("应用名不能为空", false)
+                return;
+            }
+            var environment = $.trim($("#environment").val())
+            if (environment === "") {
+                notice("应用名不能为空", false)
+                return;
+            }
+            var config = configEditor.getValue()
+            showLoading(10)
+            $.ajax({
+                type: 'POST',
+                url: "//" + host + "/config/updateAndPush.json",
+                data: {
+                    "appName": appName,
+                    "environment": environment,
+                    "config": config
+                },
+                success: function (res) {
+                    hideLoading(10)
+                    notice(res.message, notice.success)
+                    // window.location.href = "//" + host + "/config/detail.htm?appName=" + appName +"&environment="+environment;
                 },
                 dataType: 'json',
                 error: function (XMLHttpRequest) {
