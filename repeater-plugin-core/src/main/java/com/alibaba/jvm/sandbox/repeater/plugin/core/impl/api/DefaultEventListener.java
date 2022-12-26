@@ -54,61 +54,55 @@ public class DefaultEventListener implements EventListener {
         }
     };
 
-    public DefaultEventListener(InvokeType invokeType, boolean entrance,
-                                InvocationListener listener,
-                                InvocationProcessor processor) {
+    public DefaultEventListener(InvokeType invokeType, boolean entrance, InvocationListener listener, InvocationProcessor processor) {
         this.invokeType = invokeType;
         this.entrance = entrance;
         this.listener = listener;
         this.processor = processor;
     }
 
+    /**
+     * 监听jvm-sandbox事件
+     *
+     * @param event
+     * @throws Throwable
+     */
     @Override
     public void onEvent(Event event) throws Throwable {
         try {
-            /*
-             * event过滤；针对单个listener，只处理top的事件
-             */
+            // event过滤；针对单个listener，只处理top的事件
             if (!isTopEvent(event)) {
                 if (log.isDebugEnabled()) {
                     log.debug("not top event ,type={},event={},offset={}", invokeType, event, eventOffset.get().get());
                 }
                 return;
             }
-            /*
-             * 初始化Tracer
-             */
+            // 初始化Tracer
             initContext(event);
-            /*
-             * 执行基础过滤
-             */
+            // 执行基础过滤
             if (!access(event)) {
                 if (log.isDebugEnabled()) {
                     log.debug("event access failed,type={},event={}", invokeType, event);
                 }
                 return;
             }
-            /*
-             * 执行采样计算（只有entrance插件负责计算采样，子调用插件不计算)
-             */
+            // 执行采样计算（只有entrance插件负责计算采样，子调用插件不计算)
             if (!sample(event)) {
                 if (log.isDebugEnabled()) {
                     log.debug("event missing sample rule,type={},event={}", invokeType, event);
                 }
                 return;
             }
-            /*
-             * processor filter
-             */
+
+            // processor filter
             if (processor != null && processor.ignoreEvent((InvokeEvent) event)) {
                 if (log.isDebugEnabled()) {
                     log.debug("event is ignore by processor,type={},event={},processor={}", invokeType, event, processor);
                 }
                 return;
             }
-            /*
-             * 分发事件处理（对于一次around事件可以收集到入参/返回值的可以直接使用；需要从多次before实践获取的）
-             */
+
+            // 分发事件处理（对于一次around事件可以收集到入参/返回值的可以直接使用；需要从多次before实践获取的）
             switch (event.type) {
                 case BEFORE:
                     doBefore((BeforeEvent) event);
@@ -138,6 +132,75 @@ public class DefaultEventListener implements EventListener {
              * 入口插件 && 完成事件
              */
             clearContext(event);
+        }
+    }
+
+    /**
+     * 关注的事件
+     *
+     * @param event 事件
+     * @return 是否关注
+     */
+    protected boolean isTopEvent(Event event) {
+        boolean isTop;
+        switch (event.type) {
+            case THROWS:
+            case RETURN:
+                isTop = eventOffset.get().decrementAndGet() == 0;
+                break;
+            case BEFORE:
+                isTop = eventOffset.get().getAndIncrement() == 0;
+                break;
+            default:
+                isTop = false;
+                break;
+        }
+        // eventOffset == 0 代表是该线程的最后一次return/throw事件，需要主动清理资源
+        if (eventOffset.get().get() == 0) {
+            eventOffset.remove();
+        }
+        return isTop;
+    }
+
+    /**
+     * 初始化上下文；
+     * 只有entrance插件负责初始化和清理上下文
+     * 子调用无需关心traceContext信息（多线程情况下由ttl负责copy和restore，单线程由entrance负责管理）
+     *
+     * @param event 事件
+     */
+    protected void initContext(Event event) {
+        // 如果是流量的入口，则初始化tracer
+        if (entrance && isEntranceBegin(event)) {
+            Tracer.start();
+        }
+    }
+
+    /**
+     * 事件是否可以通过
+     * <p>
+     * 降级之后只有回放流量可以通过
+     *
+     * @param event 事件
+     * @return 是否通过
+     */
+    protected boolean access(Event event) {
+        return ApplicationModel.instance().isWorkingOn() &&
+                (!ApplicationModel.instance().isDegrade() || RepeatCache.isRepeatFlow(Tracer.getTraceId()));
+    }
+
+    /**
+     * 计算采样率
+     *
+     * @param event 事件
+     * @return 是否采样
+     */
+    protected boolean sample(Event event) {
+        if (entrance && event.type == Type.BEFORE) {
+            return Tracer.getContext().inTimeSample(invokeType);
+        } else {
+            final TraceContext context = Tracer.getContext();
+            return context != null && context.isSampled();
         }
     }
 
@@ -174,32 +237,6 @@ public class DefaultEventListener implements EventListener {
             log.error("Error occurred serialize", e);
         }
         RecordCache.cacheInvocation(event.invokeId, invocation);
-    }
-
-    /**
-     * 初始化invocation
-     * 放开给插件重写，可以初始化自定义的调用描述类型，模块不感知插件的类型
-     *
-     * @param beforeEvent before事件
-     * @return 一次调用
-     */
-    protected Invocation initInvocation(BeforeEvent beforeEvent) {
-        return new Invocation();
-    }
-
-    /**
-     * 计算采样率
-     *
-     * @param event 事件
-     * @return 是否采样
-     */
-    protected boolean sample(Event event) {
-        if (entrance && event.type == Type.BEFORE) {
-            return Tracer.getContext().inTimeSample(invokeType);
-        } else {
-            final TraceContext context = Tracer.getContext();
-            return context != null && context.isSampled();
-        }
     }
 
     /**
@@ -241,43 +278,14 @@ public class DefaultEventListener implements EventListener {
     }
 
     /**
-     * 关注的事件
+     * 初始化invocation
+     * 放开给插件重写，可以初始化自定义的调用描述类型，模块不感知插件的类型
      *
-     * @param event 事件
-     * @return 是否关注
+     * @param beforeEvent before事件
+     * @return 一次调用
      */
-    protected boolean isTopEvent(Event event) {
-        boolean isTop;
-        switch (event.type) {
-            case THROWS:
-            case RETURN:
-                isTop = eventOffset.get().decrementAndGet() == 0;
-                break;
-            case BEFORE:
-                isTop = eventOffset.get().getAndIncrement() == 0;
-                break;
-            default:
-                isTop = false;
-                break;
-        }
-        // eventOffset == 0 代表是该线程的最后一次return/throw事件，需要主动清理资源
-        if (eventOffset.get().get() == 0) {
-            eventOffset.remove();
-        }
-        return isTop;
-    }
-
-    /**
-     * 初始化上下文；
-     * 只有entrance插件负责初始化和清理上下文
-     * 子调用无需关心traceContext信息（多线程情况下由ttl负责copy和restore，单线程由entrance负责管理）
-     *
-     * @param event 事件
-     */
-    protected void initContext(Event event) {
-        if (entrance && isEntranceBegin(event)) {
-            Tracer.start();
-        }
+    protected Invocation initInvocation(BeforeEvent beforeEvent) {
+        return new Invocation();
     }
 
     /**
@@ -311,19 +319,6 @@ public class DefaultEventListener implements EventListener {
         return event.type != Type.BEFORE
                 // 开启trace的类型负责清理
                 && Tracer.getContext().getInvokeType() == invokeType;
-    }
-
-    /**
-     * 事件是否可以通过
-     * <p>
-     * 降级之后只有回放流量可以通过
-     *
-     * @param event 事件
-     * @return 是否通过
-     */
-    protected boolean access(Event event) {
-        return ApplicationModel.instance().isWorkingOn() &&
-                (!ApplicationModel.instance().isDegrade() || RepeatCache.isRepeatFlow(Tracer.getTraceId()));
     }
 
     @Override

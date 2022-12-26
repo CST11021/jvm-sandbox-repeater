@@ -14,7 +14,7 @@ import com.alibaba.jvm.sandbox.repeater.plugin.domain.RepeaterResult;
 public interface Broadcaster {
 
     /**
-     * 发送录制消息广播
+     * 发送录制消息广播：录制请求时会调用该方法
      *
      * @param recordModel 流量记录
      * @see RecordModel
@@ -22,7 +22,7 @@ public interface Broadcaster {
     void sendRecord(RecordModel recordModel);
 
     /**
-     * 发送回放消息广播
+     * 发送回放消息广播：回放请求时调用该方法
      *
      * @param record 回放记录
      */

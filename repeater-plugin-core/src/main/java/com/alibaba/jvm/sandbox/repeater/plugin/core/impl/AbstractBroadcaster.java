@@ -1,19 +1,14 @@
 package com.alibaba.jvm.sandbox.repeater.plugin.core.impl;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import com.alibaba.jvm.sandbox.repeater.plugin.api.Broadcaster;
 import com.alibaba.jvm.sandbox.repeater.plugin.core.util.ExecutorInner;
 import com.alibaba.jvm.sandbox.repeater.plugin.domain.RecordModel;
 import com.alibaba.jvm.sandbox.repeater.plugin.domain.RepeatModel;
-
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.*;
 
 /**
  * {@link AbstractBroadcaster} 抽象的消息转发实现
@@ -27,19 +22,14 @@ public abstract class AbstractBroadcaster implements Broadcaster {
 
     protected final static Logger log = LoggerFactory.getLogger(AbstractBroadcaster.class);
 
+    /** 录制的任务队列 */
     private final ConcurrentLinkedQueue<RecordModel> queue = new ConcurrentLinkedQueue<RecordModel>();
 
-    /**
-     * 最大队列深度
-     */
+    /** 最大队列深度 */
     private final static int maxQueueSize = 4096;
-    /**
-     * 消费队列任务数
-     */
+    /** 消费队列任务数 */
     private final static int consumerThreadNum = 4;
-    /**
-     * 创建多个线程来消费队列
-     */
+    /** 创建多个线程来消费队列 */
     private static ExecutorService executor = new ThreadPoolExecutor(4, 4,
         5L, TimeUnit.MINUTES, new LinkedBlockingDeque<Runnable>(128),
         new BasicThreadFactory.Builder().namingPattern("queue-consumer-pool-%d").build(),

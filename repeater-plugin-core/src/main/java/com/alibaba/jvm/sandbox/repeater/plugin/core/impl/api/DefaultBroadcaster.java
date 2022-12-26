@@ -1,7 +1,5 @@
 package com.alibaba.jvm.sandbox.repeater.plugin.core.impl.api;
 
-import java.util.HashMap;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.alibaba.jvm.sandbox.repeater.plugin.Constants;
@@ -13,10 +11,11 @@ import com.alibaba.jvm.sandbox.repeater.plugin.core.util.PropertyUtil;
 import com.alibaba.jvm.sandbox.repeater.plugin.core.wrapper.RecordWrapper;
 import com.alibaba.jvm.sandbox.repeater.plugin.core.wrapper.SerializerWrapper;
 import com.alibaba.jvm.sandbox.repeater.plugin.domain.*;
-
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.HashMap;
 
 /**
  * {@link DefaultBroadcaster} 默认的Http方式的消息投递实现
@@ -25,9 +24,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class DefaultBroadcaster extends AbstractBroadcaster {
 
-    /**
-     * 录制消息投递的URL
-     */
+    /** 录制消息投递的URL：jvm-sandbox 会调用该url将录制信息保存到db */
     private String broadcastRecordUrl = PropertyUtil.getPropertyOrDefault(Constants.DEFAULT_RECORD_BROADCASTER, "");
 
     /**
@@ -62,6 +59,7 @@ public class DefaultBroadcaster extends AbstractBroadcaster {
         try {
             RecordWrapper wrapper = new RecordWrapper(recordModel);
             String body = SerializerWrapper.hessianSerialize(wrapper);
+            // 请求broadcastRecordUrl，将录制信息保存到db
             broadcast(broadcastRecordUrl, body, recordModel.getTraceId());
         } catch (SerializeException e) {
             log.error("broadcast record failed", e);
