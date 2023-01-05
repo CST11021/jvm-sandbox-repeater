@@ -28,7 +28,7 @@ public class DefaultBroadcaster extends AbstractBroadcaster {
     private String broadcastRecordUrl = PropertyUtil.getPropertyOrDefault(Constants.DEFAULT_RECORD_BROADCASTER, "");
 
     /**
-     * 回放消息投递URL
+     * 回放消息投递URL（sandbox执行完回放任务后，请求该url保存回放结果）
      */
     private String broadcastRepeatUrl = PropertyUtil.getPropertyOrDefault(Constants.DEFAULT_REPEAT_BROADCASTER, "");
 
@@ -68,6 +68,11 @@ public class DefaultBroadcaster extends AbstractBroadcaster {
         }
     }
 
+    /**
+     * sandbox执行完回放任务后，调用该方法
+     *
+     * @param record 回放消息
+     */
     @Override
     protected void broadcastRepeat(RepeatModel record) {
         try {

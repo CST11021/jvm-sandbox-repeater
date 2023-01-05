@@ -27,6 +27,13 @@ public class ModuleInfoDao {
     @Resource
     private ModuleInfoRepository moduleInfoRepository;
 
+    /**
+     * 删除所有模块
+     */
+    public void deleteAll() {
+        moduleInfoRepository.deleteAll();
+    }
+
     public List<ModuleInfo> findByAppName(String appName) {
         return moduleInfoRepository.findByAppName(appName);
     }
@@ -51,7 +58,13 @@ public class ModuleInfoDao {
         );
     }
 
-    public ModuleInfo save(ModuleInfo params) {
+    /**
+     * 保存或更新
+     *
+     * @param params
+     * @return
+     */
+    public ModuleInfo saveOrUpdate(ModuleInfo params) {
         if (moduleInfoRepository.updateByAppNameAndIp(params) > 0) {
             return params;
         }
@@ -59,11 +72,24 @@ public class ModuleInfoDao {
         return moduleInfoRepository.saveAndFlush(params);
     }
 
+    /**
+     * 保存模块
+     *
+     * @param params
+     * @return
+     */
     public ModuleInfo saveAndFlush(ModuleInfo params) {
         // 保存并提交事务
         return moduleInfoRepository.saveAndFlush(params);
     }
 
+    /**
+     * 根据appName和IP查找在线模块
+     *
+     * @param appName
+     * @param ip
+     * @return
+     */
     public ModuleInfo findByAppNameAndIp(String appName, String ip) {
         return moduleInfoRepository.findByAppNameAndIp(appName, ip);
     }

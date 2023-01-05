@@ -39,5 +39,12 @@ public interface ModuleInfoRepository extends JpaRepository<ModuleInfo, Long>, J
     )
     int updateByAppNameAndIp(@Param("moduleInfo") ModuleInfo moduleInfo);
 
+    /**
+     * 根据appName和IP查找在线模块
+     *
+     * @param appName
+     * @param ip
+     * @return
+     */
     ModuleInfo findByAppNameAndIp(String appName, String ip);
 }

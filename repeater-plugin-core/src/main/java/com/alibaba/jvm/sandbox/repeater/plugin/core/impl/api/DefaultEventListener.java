@@ -1,5 +1,6 @@
 package com.alibaba.jvm.sandbox.repeater.plugin.core.impl.api;
 
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.jvm.sandbox.api.ProcessControlException;
 import com.alibaba.jvm.sandbox.api.event.*;
 import com.alibaba.jvm.sandbox.api.event.Event.Type;
@@ -38,8 +39,11 @@ public class DefaultEventListener implements EventListener {
 
     protected static Logger log = LoggerFactory.getLogger(DefaultEventListener.class);
 
+    /** 标识该监听器所属的插件类型 */
     protected final InvokeType invokeType;
+    /** 表示是否是流量入口的监听 */
     protected final boolean entrance;
+    /** EventListener最终会事件委托给InvocationListener方法调用监听来处理 */
     protected final InvocationListener listener;
     protected final InvocationProcessor processor;
     /**
@@ -69,7 +73,17 @@ public class DefaultEventListener implements EventListener {
      */
     @Override
     public void onEvent(Event event) throws Throwable {
+        // TODO whz debug日志
+        if (event instanceof BeforeEvent) {
+            BeforeEvent beforeEvent = (BeforeEvent) event;
+            log.info("BeforeEvent事件监听, 插件:{}, invokeId: {}, 类:{}, 方法:{}", invokeType.name(), beforeEvent.invokeId, beforeEvent.javaClassName, beforeEvent.javaMethodName);
+        } else if (event instanceof ReturnEvent) {
+            ReturnEvent returnEvent = (ReturnEvent) event;
+            log.info("ReturnEvent事件监听, 插件:{}, invokeId: {}, 结果:{}", invokeType.name(), returnEvent.invokeId, JSONObject.toJSONString(returnEvent.object));
+        }
+
         try {
+            // 这里只关心插件最外层的拦截方法，内部的嵌套调用会忽略
             // event过滤；针对单个listener，只处理top的事件
             if (!isTopEvent(event)) {
                 if (log.isDebugEnabled()) {
@@ -77,15 +91,18 @@ public class DefaultEventListener implements EventListener {
                 }
                 return;
             }
-            // 初始化Tracer
+
+            // 如果是入口流量，则初始化Tracer
             initContext(event);
-            // 执行基础过滤
+
+            // 执行基础过滤，降级之后只有回放流量可以通过
             if (!access(event)) {
                 if (log.isDebugEnabled()) {
                     log.debug("event access failed,type={},event={}", invokeType, event);
                 }
                 return;
             }
+
             // 执行采样计算（只有entrance插件负责计算采样，子调用插件不计算)
             if (!sample(event)) {
                 if (log.isDebugEnabled()) {
@@ -94,7 +111,7 @@ public class DefaultEventListener implements EventListener {
                 return;
             }
 
-            // processor filter
+            // 插件可以通过processor来设置要忽略的事件
             if (processor != null && processor.ignoreEvent((InvokeEvent) event)) {
                 if (log.isDebugEnabled()) {
                     log.debug("event is ignore by processor,type={},event={},processor={}", invokeType, event, processor);
@@ -136,7 +153,11 @@ public class DefaultEventListener implements EventListener {
     }
 
     /**
-     * 关注的事件
+     * 关注的事件：只关心外层的调用，方法内部的调用忽略
+     * 在执行方法体之前偏移量+1，方法体执行结束返回之前-1
+     *
+     * BEFORE：执行方法体之前的事件
+     * RETURN：执行方法体返回之前的事件
      *
      * @param event 事件
      * @return 是否关注
@@ -146,9 +167,11 @@ public class DefaultEventListener implements EventListener {
         switch (event.type) {
             case THROWS:
             case RETURN:
+                // 获取当前值，然后再-1
                 isTop = eventOffset.get().decrementAndGet() == 0;
                 break;
             case BEFORE:
+                // 获取当前值，然后再+1
                 isTop = eventOffset.get().getAndIncrement() == 0;
                 break;
             default:
@@ -215,6 +238,7 @@ public class DefaultEventListener implements EventListener {
             processor.doMock(event, entrance, invokeType);
             return;
         }
+
         Invocation invocation = initInvocation(event);
         invocation.setStart(System.currentTimeMillis());
         invocation.setTraceId(Tracer.getTraceId());
@@ -236,6 +260,8 @@ public class DefaultEventListener implements EventListener {
             Tracer.getContext().setSampled(false);
             log.error("Error occurred serialize", e);
         }
+        // TODO whz debug日志
+        log.info("调用缓存1: invokeId={}, param={}", event.invokeId, JSONObject.toJSONString(invocation));
         RecordCache.cacheInvocation(event.invokeId, invocation);
     }
 

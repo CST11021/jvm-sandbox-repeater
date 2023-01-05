@@ -6,6 +6,7 @@ import com.alibaba.repeater.console.common.domain.PageResult;
 import com.alibaba.repeater.console.common.params.ModuleInfoParams;
 import com.alibaba.repeater.console.service.ModuleInfoService;
 import com.alibaba.repeater.console.start.controller.vo.PagerAdapter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -23,6 +24,7 @@ import java.util.List;
  *
  * @author zhaoyb1990
  */
+@Slf4j
 @RequestMapping("/module")
 @Controller
 public class ModuleInfoController {
@@ -54,18 +56,6 @@ public class ModuleInfoController {
     @RequestMapping("/byName.json")
     public RepeaterResult<List<ModuleInfoBO>> list(@RequestParam("appName") String appName) {
         return moduleInfoService.query(appName);
-    }
-
-    /**
-     * 回放
-     *
-     * @param params
-     * @return
-     */
-    @ResponseBody
-    @RequestMapping("/report.json")
-    public RepeaterResult<ModuleInfoBO> list(@ModelAttribute("requestParams") ModuleInfoBO params) {
-        return moduleInfoService.report(params);
     }
 
     /**
@@ -105,7 +95,20 @@ public class ModuleInfoController {
     }
 
     /**
-     * 模块心跳检测接口
+     * 心跳上报（定时任务触发）
+     *
+     * @param params
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping("/report.json")
+    public RepeaterResult<ModuleInfoBO> list(@ModelAttribute("requestParams") ModuleInfoBO params) {
+        // log.info("心跳上报: {}", JSONObject.toJSONString(params));
+        return moduleInfoService.report(params);
+    }
+
+    /**
+     * 模块刷新
      *
      * @param params
      * @return

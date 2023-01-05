@@ -1,18 +1,17 @@
 package com.alibaba.jvm.sandbox.repeater.plugin.core.impl;
 
-import java.util.concurrent.TimeUnit;
-
 import com.alibaba.jvm.sandbox.repeater.plugin.api.Broadcaster;
 import com.alibaba.jvm.sandbox.repeater.plugin.core.cache.RepeatCache;
 import com.alibaba.jvm.sandbox.repeater.plugin.core.trace.Tracer;
-import com.alibaba.jvm.sandbox.repeater.plugin.domain.RepeaterConfig;
 import com.alibaba.jvm.sandbox.repeater.plugin.domain.RepeatContext;
 import com.alibaba.jvm.sandbox.repeater.plugin.domain.RepeatModel;
+import com.alibaba.jvm.sandbox.repeater.plugin.domain.RepeaterConfig;
 import com.alibaba.jvm.sandbox.repeater.plugin.spi.Repeater;
-
 import com.google.common.base.Stopwatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * {@link AbstractRepeater} 抽象的回放实现；统一回放基本流程，包括hook和消息反馈，实现类是需要关心{@code executeRepeat}执行回放
@@ -65,6 +64,11 @@ public abstract class AbstractRepeater implements Repeater {
         this.broadcaster = broadcaster;
     }
 
+    /**
+     * sandbox执行完回放任务后，调用该方法
+     *
+     * @param record 回放消息
+     */
     private void sendRepeat(RepeatModel record) throws RuntimeException {
         if (broadcaster == null) {
             log.error("no valid broadcaster found, ensure that Repeater#setBroadcast has been called before Repeater#repeat");

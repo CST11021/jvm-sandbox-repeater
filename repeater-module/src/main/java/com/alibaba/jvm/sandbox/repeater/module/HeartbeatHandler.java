@@ -63,6 +63,9 @@ public class HeartbeatHandler {
         }
     }
 
+    /**
+     * 心跳上报
+     */
     private void innerReport() {
         Map<String, String> params = new HashMap<String, String>(8);
         params.put("appName", ApplicationModel.instance().getAppName());

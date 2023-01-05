@@ -104,6 +104,9 @@ public class Invocation implements java.io.Serializable {
      */
     private transient ClassLoader classLoader;
 
+
+
+
     public InvokeType getType() {
         return type;
     }

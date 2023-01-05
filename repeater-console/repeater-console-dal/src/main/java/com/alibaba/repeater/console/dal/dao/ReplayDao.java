@@ -26,6 +26,12 @@ public class ReplayDao {
         return replayRepository.saveAndFlush(replay);
     }
 
+    /**
+     * 根据repeatId获取回放记录
+     *
+     * @param repeatId
+     * @return
+     */
     public Replay findByRepeatId(String repeatId) {
         return replayRepository.findByRepeatId(repeatId);
     }

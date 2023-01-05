@@ -51,6 +51,11 @@ public class PersistenceFacadeApi {
         return recordService.saveRecord(body);
     }
 
+    /**
+     *
+     * @param body
+     * @return
+     */
     @RequestMapping(value = "repeat/save", method = RequestMethod.POST)
     public RepeaterResult<String> repeatSave(@RequestBody String body) {
         return replayService.saveRepeat(body);

@@ -1,11 +1,8 @@
 package com.alibaba.jvm.sandbox.repeater.plugin.core.model;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
-import com.alibaba.jvm.sandbox.repeater.plugin.domain.RepeaterConfig;
 import com.alibaba.jvm.sandbox.repeater.plugin.core.util.ExceptionAware;
-
+import com.alibaba.jvm.sandbox.repeater.plugin.core.util.NetUtils;
+import com.alibaba.jvm.sandbox.repeater.plugin.domain.RepeaterConfig;
 
 import static com.alibaba.jvm.sandbox.repeater.plugin.core.util.PropertyUtil.getSystemPropertyOrDefault;
 
@@ -40,12 +37,14 @@ public class ApplicationModel {
         // for example, you can define it your self
         this.appName = getSystemPropertyOrDefault("app.name", "unknown");
         this.environment = getSystemPropertyOrDefault("app.env", "unknown");
-        try {
-            this.host = InetAddress.getLocalHost().getHostAddress();
-        } catch (UnknownHostException e) {
-            // default value for disaster
-            this.host = "127.0.0.1";
-        }
+        // try {
+        //     this.host = InetAddress.getLocalHost().getHostAddress();
+        // } catch (UnknownHostException e) {
+        //     // default value for disaster
+        //     this.host = "127.0.0.1";
+        // }
+
+        this.host = NetUtils.getLocalHost();
     }
 
     public static ApplicationModel instance() {

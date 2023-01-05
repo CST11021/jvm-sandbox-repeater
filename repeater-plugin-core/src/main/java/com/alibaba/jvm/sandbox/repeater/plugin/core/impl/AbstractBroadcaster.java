@@ -41,6 +41,11 @@ public abstract class AbstractBroadcaster implements Broadcaster {
         }
     }
 
+    /**
+     * 将录制的结果放到队列，由异步线程去消费处理
+     *
+     * @param recordModel 流量记录
+     */
     @Override
     public void sendRecord(RecordModel recordModel) {
         final int size = queue.size();
@@ -51,20 +56,25 @@ public abstract class AbstractBroadcaster implements Broadcaster {
         queue.offer(recordModel);
     }
 
+    /**
+     * sandbox执行完回放任务后，调用该方法
+     *
+     * @param record 回放消息
+     */
     @Override
     public void sendRepeat(RepeatModel record) {
         broadcastRepeat(record);
     }
 
     /**
-     * 真正执行消息分发
+     * 处理录制的结果，由子类去实现，repeater的默认实现是持久化落库
      *
      * @param recordModel 录制消息
      */
     abstract protected void broadcastRecord(RecordModel recordModel);
 
     /**
-     * 真正执行消息分发
+     * 处理方法调用的回放结果，由子类去实现，repeater的默认实现是持久化落库
      *
      * @param record 回放消息
      */
@@ -100,4 +110,5 @@ public abstract class AbstractBroadcaster implements Broadcaster {
             }
         }
     }
+
 }

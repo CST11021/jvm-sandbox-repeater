@@ -84,15 +84,6 @@ public class ModuleInfoServiceImpl implements ModuleInfoService {
     }
 
     @Override
-    public RepeaterResult<ModuleInfoBO> report(ModuleInfoBO params) {
-        ModuleInfo moduleInfo = moduleInfoConverter.reconvert(params);
-        moduleInfo.setGmtModified(new Date());
-        moduleInfo.setGmtCreate(new Date());
-        moduleInfoDao.save(moduleInfo);
-        return ResultHelper.success(moduleInfoConverter.convert(moduleInfo));
-    }
-
-    @Override
     public RepeaterResult<ModuleInfoBO> active(ModuleInfoParams params) {
         return execute(activeURI, params, ModuleStatus.ACTIVE);
     }
@@ -151,6 +142,27 @@ public class ModuleInfoServiceImpl implements ModuleInfoService {
         return ResultHelper.fail();
     }
 
+    /**
+     * 心跳上报
+     *
+     * @param params
+     * @return
+     */
+    @Override
+    public RepeaterResult<ModuleInfoBO> report(ModuleInfoBO params) {
+        ModuleInfo moduleInfo = moduleInfoConverter.reconvert(params);
+        moduleInfo.setGmtModified(new Date());
+        moduleInfo.setGmtCreate(new Date());
+        moduleInfoDao.saveOrUpdate(moduleInfo);
+        return ResultHelper.success(moduleInfoConverter.convert(moduleInfo));
+    }
+
+    /**
+     * 模块刷新
+     *
+     * @param params
+     * @return
+     */
     @Override
     public RepeaterResult<String> reload(ModuleInfoParams params) {
         ModuleInfo moduleInfo = moduleInfoDao.findByAppNameAndIp(params.getAppName(), params.getIp());

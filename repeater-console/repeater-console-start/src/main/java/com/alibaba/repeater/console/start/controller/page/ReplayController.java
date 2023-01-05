@@ -25,6 +25,13 @@ public class ReplayController {
     @Resource
     private ReplayService replayService;
 
+    /**
+     * 查看录制回放详情
+     *
+     * @param params
+     * @param model
+     * @return
+     */
     @RequestMapping("detail.htm")
     public String detail(@ModelAttribute("requestParams") ReplayParams params, Model model) {
         RepeaterResult<ReplayBO> result = replayService.query(params);
@@ -36,6 +43,12 @@ public class ReplayController {
         return "replay/detail";
     }
 
+    /**
+     * 执行回放功能
+     *
+     * @param params
+     * @return
+     */
     @RequestMapping("execute.json")
     @ResponseBody
     public RepeaterResult<String> replay(@ModelAttribute("requestParams") ReplayParams params) {
