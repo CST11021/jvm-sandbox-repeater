@@ -119,6 +119,12 @@ class DubboConsumerInvocationProcessor extends DefaultInvocationProcessor {
         return null;
     }
 
+    /**
+     * 是否忽略本次调用事件
+     *
+     * @param event 事件
+     * @return
+     */
     @Override
     public boolean ignoreEvent(InvokeEvent event) {
         if (event.type == Event.Type.BEFORE) {

@@ -56,7 +56,7 @@ public class PathUtils {
 
 
     /**
-     * 获取当前模块绝对路径
+     * 获取当前模块绝对路径，默认在~/.sandbox_module/ 目录下
      *
      * @return 模块绝对路径
      */

@@ -79,8 +79,15 @@ public class JavaEntrancePlugin extends AbstractInvokePluginAdapter {
         return super.enable(config);
     }
 
+    /**
+     * 监听repeater配置的变更情况
+     *
+     * @param config 配置文件
+     * @throws PluginLifeCycleException
+     */
     @Override
     public void onConfigChange(RepeaterConfig config) throws PluginLifeCycleException {
+        // configTemporary为null说明是插件第一次加载
         if (configTemporary == null) {
             super.onConfigChange(config);
         } else {

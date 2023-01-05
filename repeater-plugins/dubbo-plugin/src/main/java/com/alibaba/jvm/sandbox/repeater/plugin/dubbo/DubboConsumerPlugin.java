@@ -27,7 +27,10 @@ public class DubboConsumerPlugin extends AbstractInvokePluginAdapter {
 
     @Override
     protected List<EnhanceModel> getEnhanceModels() {
-        EnhanceModel onResponse = EnhanceModel.builder().classPattern("org.apache.dubbo.rpc.filter.ConsumerContextFilter$ConsumerContextListener")
+        // ConsumerContextFilter ConsumerContextListener
+        // dubbo 2.7版本中的隐式参数传递：内部类ConsumerContextListener负责将传回来的隐性参数添加到当前线程的LOCAL实例对应的map中。
+        EnhanceModel onResponse = EnhanceModel.builder()
+                .classPattern("org.apache.dubbo.rpc.filter.ConsumerContextFilter$ConsumerContextListener")
                 .methodPatterns(EnhanceModel.MethodPattern.transform("onResponse"))
                 .watchTypes(Event.Type.BEFORE, Event.Type.RETURN, Event.Type.THROWS)
                 .build();
@@ -55,6 +58,15 @@ public class DubboConsumerPlugin extends AbstractInvokePluginAdapter {
         return "dubbo-consumer";
     }
 
+    /**
+     * 1、是否是入口流量插件，dubbo consumer是去调用服务接口，所以不是流量入口插件
+     * 2、流量入口插件有：
+     *  com.alibaba.jvm.sandbox.repater.plugin.http.HttpPlugin
+     *  com.alibaba.jvm.sandbox.repeater.plugin.java.JavaEntrancePlugin
+     *  com.alibaba.jvm.sandbox.repeater.plugin.dubbo.DubboProviderPlugin
+     *
+     * @return true/false
+     */
     @Override
     public boolean isEntrance() {
         return false;

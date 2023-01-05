@@ -79,7 +79,7 @@ public class DefaultEventListener implements EventListener {
             log.info("BeforeEvent事件监听, 插件:{}, invokeId: {}, 类:{}, 方法:{}", invokeType.name(), beforeEvent.invokeId, beforeEvent.javaClassName, beforeEvent.javaMethodName);
         } else if (event instanceof ReturnEvent) {
             ReturnEvent returnEvent = (ReturnEvent) event;
-            log.info("ReturnEvent事件监听, 插件:{}, invokeId: {}, 结果:{}", invokeType.name(), returnEvent.invokeId, JSONObject.toJSONString(returnEvent.object));
+            log.info("ReturnEvent事件监听, 插件:{}, invokeId: {}", invokeType.name(), returnEvent.invokeId);
         }
 
         try {
@@ -134,10 +134,7 @@ public class DefaultEventListener implements EventListener {
                     break;
             }
         } catch (ProcessControlException pe) {
-            /*
-             * sandbox流程干预
-             */
-            // process control 会中断事件，不会有return/throw事件过来，因此需要清除偏移量
+            // sandbox流程干预：process control 会中断事件，不会有return/throw事件过来，因此需要清除偏移量
             eventOffset.remove();
             throw pe;
         } catch (Throwable throwable) {

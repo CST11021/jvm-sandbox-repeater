@@ -109,16 +109,22 @@ public abstract class AbstractInvokePluginAdapter implements InvokePlugin {
      */
     private synchronized void watchIfNecessary() throws PluginLifeCycleException {
         if (watched.compareAndSet(false, true)) {
+            // 获取插件关心的切点
             List<EnhanceModel> enhanceModels = getEnhanceModels();
             if (CollectionUtils.isEmpty(enhanceModels)) {
                 throw new PluginLifeCycleException("enhance models is empty, plugin type is " + identity());
             }
+
             for (EnhanceModel em : enhanceModels) {
                 IBuildingForBehavior behavior = null;
+
+                // 1、onClass
                 IBuildingForClass builder4Class = new EventWatchBuilder(watcher).onClass(em.getClassPattern());
                 if (em.isIncludeSubClasses()) {
                     builder4Class = builder4Class.includeSubClasses();
                 }
+
+                // 2、onBehavior
                 for (EnhanceModel.MethodPattern mp : em.getMethodPatterns()) {
                     behavior = builder4Class.onBehavior(mp.getMethodName());
                     if (ArrayUtils.isNotEmpty(mp.getParameterType())) {
@@ -128,6 +134,8 @@ public abstract class AbstractInvokePluginAdapter implements InvokePlugin {
                         behavior.hasAnnotationTypes(mp.getAnnotationTypes());
                     }
                 }
+
+                // 3、onWatch
                 if (behavior != null) {
                     int watchId = behavior.onWatch(getEventListener(listener), em.getWatchTypes()).getWatchId();
                     watchIds.add(watchId);
@@ -138,7 +146,7 @@ public abstract class AbstractInvokePluginAdapter implements InvokePlugin {
     }
 
     /**
-     * 获取需要增强的类模型
+     * 获取需要增强的类模型：由插件去扩展
      *
      * @return enhanceModels
      */

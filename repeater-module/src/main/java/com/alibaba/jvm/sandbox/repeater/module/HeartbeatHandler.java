@@ -26,16 +26,24 @@ import static com.alibaba.jvm.sandbox.repeater.plugin.Constants.REPEAT_HEARTBEAT
  */
 public class HeartbeatHandler {
 
+    /** 十秒执行一次 */
     private static final long FREQUENCY = 10;
 
+    /** 上报健康检查信息的http url请求路径 */
     private final static String HEARTBEAT_DOMAIN = PropertyUtil.getPropertyOrDefault(REPEAT_HEARTBEAT_URL, "");
 
+    /** 用于控制心跳任务是否开始进行 */
+    private AtomicBoolean initialize = new AtomicBoolean(false);
+
+    /** 单线程的心跳健康检查定时任务 */
     private static ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1,
             new BasicThreadFactory.Builder().namingPattern("heartbeat-pool-%d").daemon(true).build());
 
+    /** 沙箱配置 */
     private final ConfigInfo configInfo;
+    /** sandbox模块管理器 */
     private final ModuleManager moduleManager;
-    private AtomicBoolean initialize = new AtomicBoolean(false);
+
 
     public HeartbeatHandler(ConfigInfo configInfo, ModuleManager moduleManager) {
         this.configInfo = configInfo;
@@ -65,6 +73,7 @@ public class HeartbeatHandler {
 
     /**
      * 心跳上报
+     * 发送http请求，上报目标java进程的健康状态和repeater模块的激活状态
      */
     private void innerReport() {
         Map<String, String> params = new HashMap<String, String>(8);

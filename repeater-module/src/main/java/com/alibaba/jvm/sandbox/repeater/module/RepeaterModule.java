@@ -67,16 +67,12 @@ public class RepeaterModule implements Module, ModuleLifecycle {
 
     @Resource
     private ModuleEventWatcher eventWatcher;
-
     @Resource
     private ModuleController moduleController;
-
     @Resource
     private ConfigInfo configInfo;
-
     @Resource
     private ModuleManager moduleManager;
-
     @Resource
     private LoadedClassDataSource loadedClassDataSource;
 
@@ -92,6 +88,7 @@ public class RepeaterModule implements Module, ModuleLifecycle {
 
     private HeartbeatHandler heartbeatHandler;
 
+    /** 用于标记是否已经初始化过 */
     private AtomicBoolean initialized = new AtomicBoolean(false);
 
     @Override
@@ -135,69 +132,24 @@ public class RepeaterModule implements Module, ModuleLifecycle {
                 configManager = StandaloneSwitch.instance().getConfigManager();
                 broadcaster = StandaloneSwitch.instance().getBroadcaster();
                 invocationListener = new DefaultInvocationListener(broadcaster);
+
+                // 获取repeater的配置
                 RepeaterResult<RepeaterConfig> pr = configManager.pullConfig();
                 if (pr.isSuccess()) {
                     log.info("pull repeater config success,config={}", pr.getData());
+                    // 缓存所有的类加载器
                     ClassloaderBridge.init(loadedClassDataSource);
                     initialize(pr.getData());
                 }
             }
         });
+
+        // 开始心跳健康检查
         heartbeatHandler = new HeartbeatHandler(configInfo, moduleManager);
         heartbeatHandler.start();
     }
 
-    /**
-     * 初始化插件
-     *
-     * @param config 配置文件
-     */
-    private synchronized void initialize(RepeaterConfig config) {
-        if (initialized.compareAndSet(false, true)) {
-            try {
-                ApplicationModel.instance().setConfig(config);
-                // 特殊路由表;
-                PluginClassLoader.Routing[] routingArray = PluginClassRouting.wellKnownRouting(configInfo.getMode() == Mode.AGENT, 20L);
-                String pluginsPath;
-                if (StringUtils.isEmpty(config.getPluginsPath())) {
-                    pluginsPath = PathUtils.getPluginPath();
-                } else {
-                    pluginsPath = config.getPluginsPath();
-                }
-                lifecycleManager = new JarFileLifeCycleManager(pluginsPath, routingArray);
-                // 装载插件
-                invokePlugins = lifecycleManager.loadInvokePlugins();
-                for (InvokePlugin invokePlugin : invokePlugins) {
-                    try {
-                        if (invokePlugin.enable(config)) {
-                            log.info("enable plugin {} success", invokePlugin.identity());
-                            invokePlugin.watch(eventWatcher, invocationListener);
-                            invokePlugin.onConfigChange(config);
-                        }
-                    } catch (PluginLifeCycleException e) {
-                        log.info("watch plugin occurred error", e);
-                    }
-                }
-                // 装载回放器
-                List<Repeater> repeaters = lifecycleManager.loadRepeaters();
-                for (Repeater repeater : repeaters) {
-                    if (repeater.enable(config)) {
-                        repeater.setBroadcast(broadcaster);
-                    }
-                }
-                RepeaterBridge.instance().build(repeaters);
-                // 装载消息订阅器
-                List<SubscribeSupporter> subscribes = lifecycleManager.loadSubscribes();
-                for (SubscribeSupporter subscribe : subscribes) {
-                    subscribe.register();
-                }
-                TtlConcurrentAdvice.watcher(eventWatcher).watch(config);
-            } catch (Throwable throwable) {
-                initialized.compareAndSet(true, false);
-                log.error("error occurred when initialize module", throwable);
-            }
-        }
-    }
+
 
     /**
      * 回放http接口
@@ -245,26 +197,6 @@ public class RepeaterModule implements Module, ModuleLifecycle {
         }
     }
 
-    private synchronized void reload() throws ModuleException {
-        moduleController.frozen();
-        // unwatch all plugin
-        RepeaterResult<RepeaterConfig> result = configManager.pullConfig();
-        if (!result.isSuccess()) {
-            log.error("reload plugin failed, cause pull config not success");
-            return;
-        }
-        for (InvokePlugin invokePlugin : invokePlugins) {
-            if (invokePlugin.enable(result.getData())) {
-                invokePlugin.unWatch(eventWatcher, invocationListener);
-            }
-        }
-        // release classloader
-        lifecycleManager.release();
-        // reWatch
-        initialize(result.getData());
-        moduleController.active();
-    }
-
     /**
      * 回放http接口(暴露JSON回放）
      *
@@ -310,6 +242,66 @@ public class RepeaterModule implements Module, ModuleLifecycle {
         }
     }
 
+
+    /**
+     * 初始化插件
+     *
+     * @param config 配置文件
+     */
+    private synchronized void initialize(RepeaterConfig config) {
+        if (initialized.compareAndSet(false, true)) {
+            try {
+                ApplicationModel.instance().setConfig(config);
+
+                // 特殊路由表;
+                PluginClassLoader.Routing[] routingArray = PluginClassRouting.wellKnownRouting(configInfo.getMode() == Mode.AGENT, 20L);
+
+                // 获取插件jar包的绝对路径
+                String pluginsPath;
+                if (StringUtils.isEmpty(config.getPluginsPath())) {
+                    pluginsPath = PathUtils.getPluginPath();
+                } else {
+                    pluginsPath = config.getPluginsPath();
+                }
+
+                lifecycleManager = new JarFileLifeCycleManager(pluginsPath, routingArray);
+
+                // 1、装载插件
+                invokePlugins = lifecycleManager.loadInvokePlugins();
+                for (InvokePlugin invokePlugin : invokePlugins) {
+                    try {
+                        if (invokePlugin.enable(config)) {
+                            log.info("enable plugin {} success", invokePlugin.identity());
+                            invokePlugin.watch(eventWatcher, invocationListener);
+                            invokePlugin.onConfigChange(config);
+                        }
+                    } catch (PluginLifeCycleException e) {
+                        log.info("watch plugin occurred error", e);
+                    }
+                }
+
+                // 2、装载回放器
+                List<Repeater> repeaters = lifecycleManager.loadRepeaters();
+                for (Repeater repeater : repeaters) {
+                    if (repeater.enable(config)) {
+                        repeater.setBroadcast(broadcaster);
+                    }
+                }
+                RepeaterBridge.instance().build(repeaters);
+
+                // 3、装载消息订阅器
+                List<SubscribeSupporter> subscribes = lifecycleManager.loadSubscribes();
+                for (SubscribeSupporter subscribe : subscribes) {
+                    subscribe.register();
+                }
+                TtlConcurrentAdvice.watcher(eventWatcher).watch(config);
+            } catch (Throwable throwable) {
+                initialized.compareAndSet(true, false);
+                log.error("error occurred when initialize module", throwable);
+            }
+        }
+    }
+
     /**
      * 通知配置变更
      *
@@ -327,5 +319,25 @@ public class RepeaterModule implements Module, ModuleLifecycle {
                 }
             }
         }
+    }
+
+    private synchronized void reload() throws ModuleException {
+        moduleController.frozen();
+        // unwatch all plugin
+        RepeaterResult<RepeaterConfig> result = configManager.pullConfig();
+        if (!result.isSuccess()) {
+            log.error("reload plugin failed, cause pull config not success");
+            return;
+        }
+        for (InvokePlugin invokePlugin : invokePlugins) {
+            if (invokePlugin.enable(result.getData())) {
+                invokePlugin.unWatch(eventWatcher, invocationListener);
+            }
+        }
+        // release classloader
+        lifecycleManager.release();
+        // reWatch
+        initialize(result.getData());
+        moduleController.active();
     }
 }

@@ -1,9 +1,5 @@
 package com.alibaba.jvm.sandbox.repeater.plugin.core.impl.api;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.alibaba.jvm.sandbox.repeater.plugin.api.Broadcaster;
 import com.alibaba.jvm.sandbox.repeater.plugin.api.InvocationListener;
 import com.alibaba.jvm.sandbox.repeater.plugin.core.cache.RecordCache;
@@ -14,10 +10,13 @@ import com.alibaba.jvm.sandbox.repeater.plugin.core.wrapper.SerializerWrapper;
 import com.alibaba.jvm.sandbox.repeater.plugin.domain.Invocation;
 import com.alibaba.jvm.sandbox.repeater.plugin.domain.InvokeType;
 import com.alibaba.jvm.sandbox.repeater.plugin.domain.RecordModel;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * {@link DefaultInvocationListener} 默认的调用监听实现
@@ -35,6 +34,11 @@ public class DefaultInvocationListener implements InvocationListener {
         this.broadcast = broadcast;
     }
 
+    /**
+     * 一次调用完成的事件监听：在方法调用完成时触发该方法
+     *
+     * @param invocation 组装的调用信息
+     */
     @Override
     public void onInvocation(Invocation invocation) {
         try {
@@ -43,6 +47,7 @@ public class DefaultInvocationListener implements InvocationListener {
             Tracer.getContext().setSampled(false);
             log.error("Error occurred serialize", e);
         }
+
         if (invocation.isEntrance()) {
             ApplicationModel am = ApplicationModel.instance();
             RecordModel recordModel = new RecordModel();

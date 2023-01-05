@@ -22,7 +22,10 @@ import java.util.Map;
 public class ClassloaderBridge {
 
     private final static String BOOTSTRAP_CLASSLOADER = "BootstrapClassLoader";
+
+    /** 单例模式 */
     private static ClassloaderBridge instance;
+    /** 类加载器缓存Map<类加载器的类名, ClassLoader实例> */
     private final Map<String, ClassLoader> clsCached = Maps.newConcurrentMap();
     private final LoadedClassDataSource loadedClassDataSource;
 
@@ -45,6 +48,9 @@ public class ClassloaderBridge {
         instance().cacheClassLoader();
     }
 
+    /**
+     * 缓存类加载器
+     */
     private void cacheClassLoader() {
         Iterator<Class<?>> iterator = loadedClassDataSource.iteratorForLoadedClasses();
         while (iterator.hasNext()) {
