@@ -16,6 +16,7 @@
         <module>java-plugin</module>
         <module>http-plugin</module>
         <module>dubbo-plugin</module>
+        <module>dubbo2x-plugin</module>
         <module>redis-plugin</module>
         <module>hibernate-plugin</module>
         <module>spring-data-jpa-plugin</module>

@@ -372,21 +372,17 @@ sh ~/sandbox/bin/sandbox.sh -p 96750 -S
 
  <img src="assets/image-20221206150214456.png" alt="image-20221206150214456" style="zoom:20%;" />
 
+
+
 ## jvm-sandbox-repeater脚本说明
 
-### bootstrap.sh
 
-说明：
 
-1、kill `repeater-bootstrap.jar` 进程；
+### package.sh
 
-2、打包 `jvm-sandbox-repeater` 工程，输出jar包；
+打包如下jar包
 
-3、下载 [sandbox](https://github.com/alibaba/jvm-sandbox-repeater/releases/download/v1.0.0/sandbox-1.3.3-bin.tar) 部署包，并解压到home目录；
-
-4、创建 `~/.sandbox-module` 目录，并复制 `jvm-sandbox-repeater` 工程jar包到该目录；
-
-5、启动home目录下的 `.sandbox-module/repeater-bootstrap.jar` 应用；
+<img src="assets/image-20221021144015374.png" alt="image-20221021144015374" style="zoom:50%;" />
 
 
 
@@ -402,11 +398,15 @@ sh ~/sandbox/bin/sandbox.sh -p 96750 -S
 
 
 
-### package.sh
+### whz-install-local.sh
 
-打包如下jar包
+注：该脚本和install-local.sh脚本无区别，只是该脚本不回去下载 [sandbox](https://github.com/alibaba/jvm-sandbox-repeater/releases/download/v1.0.0/sandbox-1.3.3-bin.tar) 部署包，并解压，该步骤比较耗时
 
-<img src="assets/image-20221021144015374.png" alt="image-20221021144015374" style="zoom:50%;" />
+1、打包 `jvm-sandbox-repeater` 工程，输出jar包；
+
+2、创建 `~/.sandbox-module` 目录；
+
+3、将 `package.sh` 脚本生成的jar包文件copy到 `~/.sandbox-module`
 
 
 
@@ -420,7 +420,19 @@ sh ~/sandbox/bin/sandbox.sh -p 96750 -S
 
 
 
+### bootstrap.sh
 
+说明：
+
+1、kill `repeater-bootstrap.jar` 进程；
+
+2、打包 `jvm-sandbox-repeater` 工程，输出jar包；
+
+3、下载 [sandbox](https://github.com/alibaba/jvm-sandbox-repeater/releases/download/v1.0.0/sandbox-1.3.3-bin.tar) 部署包，并解压到home目录；
+
+4、创建 `~/.sandbox-module` 目录，并复制 `jvm-sandbox-repeater` 工程jar包到该目录；
+
+5、启动home目录下的 `.sandbox-module/repeater-bootstrap.jar` 应用；
 
 
 

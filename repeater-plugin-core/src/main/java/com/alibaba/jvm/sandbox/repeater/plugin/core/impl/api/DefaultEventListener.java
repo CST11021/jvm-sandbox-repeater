@@ -250,6 +250,7 @@ public class DefaultEventListener implements EventListener {
         invocation.setSerializeToken(ClassloaderBridge.instance().encode(event.javaClassLoader));
         try {
             // fix issue#14 : useGeneratedKeys
+            // 是否需要在方法调用前及时进行序列化
             if (processor.inTimeSerializeRequest(invocation, event)) {
                 SerializerWrapper.inTimeSerialize(invocation);
             }

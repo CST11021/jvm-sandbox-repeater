@@ -65,6 +65,8 @@ public class RepeaterModule implements Module, ModuleLifecycle {
 
     private final static Logger log = LoggerFactory.getLogger(RepeaterModule.class);
 
+    // 以下这些组件jvm-sandbox框架会自动注入进来
+
     @Resource
     private ModuleEventWatcher eventWatcher;
     @Resource
@@ -76,21 +78,33 @@ public class RepeaterModule implements Module, ModuleLifecycle {
     @Resource
     private LoadedClassDataSource loadedClassDataSource;
 
+
+
+    /** repeater插件配置管理器 */
+    private ConfigManager configManager;
+    /** 用于发送录制和回放的请求消息 */
     private Broadcaster broadcaster;
+    /** InvokePlugin：所有的repeater插件都需要实现该接口，invokePlugins表示的是加载的插件集合 */
+    private List<InvokePlugin> invokePlugins;
 
     private InvocationListener invocationListener;
 
-    private ConfigManager configManager;
-
     private LifecycleManager lifecycleManager;
-
-    private List<InvokePlugin> invokePlugins;
-
-    private HeartbeatHandler heartbeatHandler;
 
     /** 用于标记是否已经初始化过 */
     private AtomicBoolean initialized = new AtomicBoolean(false);
+    /** 用于监听心跳 */
+    private HeartbeatHandler heartbeatHandler;
 
+    /**
+     * 模块加载，模块开始加载之前调用！
+     * <p>
+     * 模块加载是模块生命周期的开始，在模块生命中期中有且只会调用一次。
+     * 这里抛出异常将会是阻止模块被加载的唯一方式，如果模块判定加载失败，将会释放掉所有预申请的资源，模块也不会被沙箱所感知
+     * </p>
+     *
+     * @throws Throwable 加载模块失败
+     */
     @Override
     public void onLoad() throws Throwable {
         // 初始化日志框架
@@ -106,6 +120,15 @@ public class RepeaterModule implements Module, ModuleLifecycle {
         }
     }
 
+    /**
+     * 模块卸载，模块开始卸载之前调用！
+     * <p>
+     * 模块卸载是模块生命周期的结束，在模块生命中期中有且只会调用一次。
+     * 这里抛出异常将会是阻止模块被卸载的唯一方式，如果模块判定卸载失败，将不会造成任何资源的提前关闭与释放，模块将能继续正常工作
+     * </p>
+     *
+     * @throws Throwable 卸载模块失败
+     */
     @Override
     public void onUnload() throws Throwable {
         if (lifecycleManager != null) {
@@ -114,16 +137,49 @@ public class RepeaterModule implements Module, ModuleLifecycle {
         heartbeatHandler.stop();
     }
 
+    /**
+     * 模块激活
+     * <p>
+     * 模块被激活后，模块所增强的类将会被激活，所有{@link com.alibaba.jvm.sandbox.api.listener.EventListener}将开始收到对应的事件
+     * </p>
+     * <p>
+     * 这里抛出异常将会是阻止模块被激活的唯一方式
+     * </p>
+     *
+     * @throws Throwable 模块激活失败
+     */
     @Override
     public void onActive() throws Throwable {
         log.info("onActive");
     }
 
+    /**
+     * 模块冻结
+     * <p>
+     * 模块被冻结后，模块所持有的所有{@link com.alibaba.jvm.sandbox.api.listener.EventListener}将被静默，无法收到对应的事件。
+     * 需要注意的是，模块冻结后虽然不再收到相关事件，但沙箱给对应类织入的增强代码仍然还在。
+     * </p>
+     * <p>
+     * 这里抛出异常将会是阻止模块被冻结的唯一方式
+     * </p>
+     *
+     * @throws Throwable 模块冻结失败
+     */
     @Override
     public void onFrozen() throws Throwable {
         log.info("onFrozen");
     }
 
+    /**
+     * 模块加载完成，模块完成加载后调用！
+     * <p>
+     * 模块完成加载是在模块完成所有资源加载、分配之后的回调，在模块生命中期中有且只会调用一次。
+     * 这里抛出异常不会影响模块被加载成功的结果。
+     * </p>
+     * <p>
+     * 模块加载完成之后，所有的基于模块的操作都可以在这个回调中进行
+     * </p>
+     */
     @Override
     public void loadCompleted() {
         ExecutorInner.execute(new Runnable() {

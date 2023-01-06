@@ -36,6 +36,7 @@ public class HessianSerializer extends AbstractSerializerAdapter {
         Hessian2Output output = new Hessian2Output(byteArray);
         output.setSerializerFactory(getFactory(classLoader));
         try {
+            // 将object序列为字节数组，并保存到byteArray
             output.writeObject(object);
             output.close();
         } catch (Throwable t) {
