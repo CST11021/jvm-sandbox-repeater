@@ -56,12 +56,17 @@ public class NetUtils {
             if (interfaces != null) {
                 while(interfaces.hasMoreElements()) {
                     try {
-                        NetworkInterface network = (NetworkInterface)interfaces.nextElement();
+                        NetworkInterface network = interfaces.nextElement();
+                        // 排除掉使用VPN的IP，否则获取不到本地的真实IP
+                        if (network.getDisplayName().contains("utun")) {
+                            continue;
+                        }
+
                         Enumeration<InetAddress> addresses = network.getInetAddresses();
                         if (addresses != null) {
                             while(addresses.hasMoreElements()) {
                                 try {
-                                    InetAddress address = (InetAddress)addresses.nextElement();
+                                    InetAddress address = addresses.nextElement();
                                     if (isValidAddress(address)) {
                                         return address;
                                     }
