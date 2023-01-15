@@ -56,6 +56,24 @@ public class PluginClassRouting {
 
     /**
      * 临时的实现方式，把一些插件、回放器的路由规则写在这里面；
+     * 注意：这里http和dubbo框架比较特殊，
+     * 因为例如http是通过拦截：javax.servlet.http.HttpServlet#service(HttpServletRequest req, HttpServletResponse resp)
+     * 方法来获取入参和出参，但是这里无法通过方法的参数直接获取出入参，而是：
+     * 通过HttpServletRequest#getParameterMap()获取请求的入参
+     * 通过HttpServletRequest#getInputStream()获取请求的输入流
+     * 通过HttpServletResponse#getOutputStream()获取响应的输出流
+     *
+     * 一样的dubbo框架需要通过连接org.apache.dubbo.rpc.filter.ConsumerContextFilter#invoke(Invoker<?> invoker, Invocation invocation)
+     * 方法来获取入参和出参，也无法直接通过拦截方法的参数直接获取出入参，而是：
+     * 通过Invocation#getArguments()获取请求参数
+     * 通过Invoker#getValue()获取返回结果
+     *
+     * 而想mybatis等其他框架，是通过拦截org.apache.ibatis.binding.MapperMethod#execute(SqlSession sqlSession, Object[] args)
+     * 方法来获取入参和出参，这里入参就是args，而出参刚好是该方法的返回值，所以不需要通过在插件代码中，不需要通过反射机制来获取，而是可以通过
+     * sandbox提供的BeforeEvent#argumentArray获取入参和ReturnEvent#object获取出参
+     *
+     * 综上，因为像http、dubbo这样的框架需要通过反射调用框架类方法来获取出入参，因此需要引入，框架类来解析和获取类加载器，而其他框架例如mybatis
+     * 不需要反射调用框架类方法，因此这里不需要引入框架类
      *
      * @param isPreloading 是否预加载
      * @param timeout      超时时间
@@ -70,6 +88,7 @@ public class PluginClassRouting {
                 .matcher(Matcher.PLUGIN)
                 .block(true)
                 .build();
+
         // dubbo回放器中对dubbo框架路由
         PluginClassRouting dubboRepeaterRouting = PluginClassRouting.builder()
                 .targetClass("org.apache.dubbo.rpc.model.ApplicationModel")
@@ -89,9 +108,7 @@ public class PluginClassRouting {
      * @param timeout      超时时间(s)
      * @return 特殊路由列表
      */
-    private static PluginClassLoader.Routing[] transformRouting(List<PluginClassRouting> routingList,
-                                                                boolean isPreloading,
-                                                                Long timeout) {
+    private static PluginClassLoader.Routing[] transformRouting(List<PluginClassRouting> routingList, boolean isPreloading, Long timeout) {
         List<PluginClassLoader.Routing> result = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(routingList)) {
             for (PluginClassRouting routing : routingList) {
@@ -130,7 +147,7 @@ public class PluginClassRouting {
             }
         }
         List<Class<?>> instances = ClassloaderBridge.instance().findClassInstances(routing.targetClass);
-        // ensure only one classloader will be found
+        // 确保只找到一个类加载器
         if (instances.size() > 1 && routing.block) {
             throw new RuntimeException("found multiple" + routing.targetClass + "loaded in container, can't use start repeater with special routing.");
         } else if (instances.size() == 1) {

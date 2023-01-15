@@ -38,6 +38,16 @@ public class PluginClassLoader extends URLClassLoader {
         }
     }
 
+    /**
+     * 1、通过重写Class<?> loadClass(String name, boolean resolve)方法，来打破双亲委派模型
+     * 2、通常不想打破双亲委派模型，那么只需要重写findClass方法即可
+     *
+     * @param name
+     * @param resolve
+     *
+     * @return
+     * @throws ClassNotFoundException
+     */
     @Override
     protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
 
@@ -56,6 +66,7 @@ public class PluginClassLoader extends URLClassLoader {
                 if (!routing.isHit(name)) {
                     continue;
                 }
+
                 final ClassLoader routingClassLoader = routing.classLoader;
                 try {
                     return routingClassLoader.loadClass(name);
@@ -65,9 +76,8 @@ public class PluginClassLoader extends URLClassLoader {
             }
         }
 
-        // 先查一次已加载类的缓存
+        // 先查一次已加载类的缓存，如果已经加载了，则不加载
         final Class<?> loadedClass = findLoadedClass(name);
-
         if (loadedClass != null) {
             return loadedClass;
         }
@@ -82,6 +92,8 @@ public class PluginClassLoader extends URLClassLoader {
             return super.loadClass(name, resolve);
         }
     }
+
+
 
     /**
      * 是否使用父类加载（理论上PluginClassLoader除了特殊路由表之外的都可以用moduleClassloader的类）
