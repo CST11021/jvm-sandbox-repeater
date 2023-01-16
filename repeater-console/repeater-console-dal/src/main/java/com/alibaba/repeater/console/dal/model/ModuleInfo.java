@@ -1,5 +1,6 @@
 package com.alibaba.repeater.console.dal.model;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -42,4 +43,12 @@ public class ModuleInfo implements java.io.Serializable {
     private String version;
 
     private String status;
+
+    /** 扩展信息 */
+    private String ext;
+
+    @Data
+    public static class Ext {
+        private String pid;
+    }
 }

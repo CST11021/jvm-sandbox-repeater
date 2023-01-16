@@ -27,7 +27,19 @@ public interface ModuleInfoService {
 
     RepeaterResult<ModuleInfoBO> frozen(ModuleInfoParams params);
 
+    /**
+     * 启动sandbox沙箱，植入到目标程序
+     *
+     * @param params
+     * @return
+     */
     RepeaterResult<String> install(ModuleInfoParams params);
 
+    /**
+     * repeater模块刷新：重新加载repeater的所有插件
+     *
+     * @param params
+     * @return
+     */
     RepeaterResult<String> reload(ModuleInfoParams params);
 }

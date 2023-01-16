@@ -235,7 +235,7 @@ public class RepeaterModule implements Module, ModuleLifecycle {
     }
 
     /**
-     * 重新加载插件
+     * 重新加载repeater的所有插件
      *
      * @param req    请求参数
      * @param writer printWriter
@@ -377,6 +377,15 @@ public class RepeaterModule implements Module, ModuleLifecycle {
         }
     }
 
+    /**
+     * 1、冻结目标程序的所有模块
+     * 2、拉取repeater配置信息
+     * 3、释放repeater资源
+     * 4、重新加载repeater插件
+     * 5、激活目标程序的所有模块
+     *
+     * @throws ModuleException
+     */
     private synchronized void reload() throws ModuleException {
         moduleController.frozen();
         // unwatch all plugin

@@ -44,7 +44,8 @@ create table module_info (
                              ip varchar(36) not null COMMENT '机器IP',
                              port varchar(12) not null COMMENT '链路追踪ID',
                              version varchar(128) not null COMMENT '模块版本号',
-                             status varchar(36) not null COMMENT '模块状态'
+                             status varchar(36) not null COMMENT '模块状态',
+                             ext varchar(256) default '' COMMENT '扩展信息'
 ) ENGINE = InnoDB COMMENT = '在线模块信息' DEFAULT CHARSET = utf8 AUTO_INCREMENT = 1;
 
 drop table IF EXISTS module_config;

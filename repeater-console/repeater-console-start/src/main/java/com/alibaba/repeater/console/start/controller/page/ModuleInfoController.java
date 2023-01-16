@@ -33,7 +33,7 @@ public class ModuleInfoController {
     private ModuleInfoService moduleInfoService;
 
     /**
-     * 模块列表
+     * 目标程序列表
      *
      * @param params
      * @param model
@@ -47,7 +47,7 @@ public class ModuleInfoController {
     }
 
     /**
-     * 按应用名查询模块
+     * 按应用名查询所有目标程序
      *
      * @param appName
      * @return
@@ -59,7 +59,7 @@ public class ModuleInfoController {
     }
 
     /**
-     * 激活模块
+     * 激活模块：模块被激活后，模块所增强的类将会被激活，所有EventListener将开始收到对应的事件，这里抛出异常将会是阻止模块被激活的唯一方式。
      *
      * @param params
      * @return
@@ -71,7 +71,7 @@ public class ModuleInfoController {
     }
 
     /**
-     * 冻结模块
+     * 冻结模块：模块被冻结后，模块所持有的所有EventListener将被静默，无法收到对应的事件。需要注意的是，模块冻结后虽然不再收到相关事件，但沙箱给对应类织入的增强代码仍然还在。
      *
      * @param params
      * @return
@@ -83,7 +83,7 @@ public class ModuleInfoController {
     }
 
     /**
-     * 安装模块
+     * 启动sandbox沙箱，植入到目标程序
      *
      * @param params
      * @return
@@ -95,7 +95,7 @@ public class ModuleInfoController {
     }
 
     /**
-     * 心跳上报（定时任务触发）
+     * 心跳上报（定时任务触发），心跳上报：这里会刷新应用程序信息
      *
      * @param params
      * @return
@@ -108,7 +108,7 @@ public class ModuleInfoController {
     }
 
     /**
-     * 模块刷新
+     * repeater模块刷新：重新加载repeater的所有插件
      *
      * @param params
      * @return

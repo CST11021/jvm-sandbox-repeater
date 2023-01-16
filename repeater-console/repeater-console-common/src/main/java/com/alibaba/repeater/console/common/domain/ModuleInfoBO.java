@@ -26,6 +26,8 @@ public class ModuleInfoBO extends BaseBO {
 
     private String environment;
 
+    private String pid;
+
     private String ip;
 
     private String port;

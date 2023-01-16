@@ -9,6 +9,7 @@ import com.alibaba.jvm.sandbox.repeater.plugin.core.util.LogUtil;
 import com.alibaba.jvm.sandbox.repeater.plugin.core.util.PropertyUtil;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
+import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
@@ -79,6 +80,9 @@ public class HeartbeatHandler {
         Map<String, String> params = new HashMap<String, String>(8);
         params.put("appName", ApplicationModel.instance().getAppName());
         params.put("ip", ApplicationModel.instance().getHost());
+        String runtimeBeanName = ManagementFactory.getRuntimeMXBean().getName();
+        String pid = runtimeBeanName.split("@")[0];
+        params.put("pid", pid);
         params.put("environment", ApplicationModel.instance().getEnvironment());
         params.put("port", configInfo.getServerAddress().getPort() + "");
         params.put("version", Constants.VERSION);

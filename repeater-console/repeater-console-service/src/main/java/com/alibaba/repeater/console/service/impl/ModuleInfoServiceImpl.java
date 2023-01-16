@@ -33,13 +33,17 @@ import java.util.stream.Collectors;
 @Service("heartbeatService")
 public class ModuleInfoServiceImpl implements ModuleInfoService {
 
+    /** 调用: jvm-sandbox工程的 ModuleMgrModule#active()方法 */
     private static String activeURI = "http://%s:%s/sandbox/default/module/http/sandbox-module-mgr/active?ids=repeater";
 
+    /** 调用: jvm-sandbox工程的 ModuleMgrModule#frozen()方法 */
     private static String frozenURI = "http://%s:%s/sandbox/default/module/http/sandbox-module-mgr/frozen?ids=repeater";
 
+    /** 调用: RepeaterModule#reload()方法 */
     @Value("${repeat.reload.url}")
     private String reloadURI;
 
+    /** 启动sandbox沙箱，并安装模块 */
     private static String installBash = "sh %s/sandbox/bin/sandbox.sh -p %s -P 8820";
 
     @Resource
@@ -63,6 +67,12 @@ public class ModuleInfoServiceImpl implements ModuleInfoService {
         return result;
     }
 
+    /**
+     * 查询目标应用程序
+     *
+     * @param appName
+     * @return
+     */
     @Override
     public RepeaterResult<List<ModuleInfoBO>> query(String appName) {
         List<ModuleInfo> byAppName = moduleInfoDao.findByAppName(appName);
@@ -83,16 +93,35 @@ public class ModuleInfoServiceImpl implements ModuleInfoService {
         return ResultHelper.success(moduleInfoConverter.convert(moduleInfo));
     }
 
+    /**
+     * 冻结目标程序中沙箱的所有模块。模块被激活后，模块所增强的类将会被激活，所有EventListener将开始收到对应的事件，这里抛出异常将会是阻止模块被激活的唯一方式。
+     *
+     * @param params
+     * @return
+     */
     @Override
     public RepeaterResult<ModuleInfoBO> active(ModuleInfoParams params) {
         return execute(activeURI, params, ModuleStatus.ACTIVE);
     }
 
+    /**
+     * 冻结目标程序中沙箱的所有模块，模块被冻结后，模块所持有的所有EventListener将被静默，无法收到对应的事件。
+     * 需要注意的是，模块冻结后虽然不再收到相关事件，但沙箱给对应类织入的增强代码仍然还在。
+     *
+     * @param params
+     * @return
+     */
     @Override
     public RepeaterResult<ModuleInfoBO> frozen(ModuleInfoParams params) {
         return execute(frozenURI, params, ModuleStatus.FROZEN);
     }
 
+    /**
+     * 启动sandbox沙箱，植入到目标程序
+     *
+     * @param params
+     * @return
+     */
     @Override
     public RepeaterResult<String> install(ModuleInfoParams params) {
         // this is a fake local implement; must be overwrite in product usage;
@@ -143,7 +172,7 @@ public class ModuleInfoServiceImpl implements ModuleInfoService {
     }
 
     /**
-     * 心跳上报
+     * 心跳上报：这里会刷新应用程序信息
      *
      * @param params
      * @return
@@ -158,7 +187,7 @@ public class ModuleInfoServiceImpl implements ModuleInfoService {
     }
 
     /**
-     * 模块刷新
+     * repeater模块刷新：重新加载repeater的所有插件
      *
      * @param params
      * @return
@@ -169,6 +198,7 @@ public class ModuleInfoServiceImpl implements ModuleInfoService {
         if (moduleInfo == null) {
             return ResultHelper.fail("data not exist");
         }
+
         HttpUtil.Resp resp = HttpUtil.doGet(String.format(reloadURI, moduleInfo.getIp(), moduleInfo.getPort()));
         return ResultHelper.fs(resp.isSuccess());
     }

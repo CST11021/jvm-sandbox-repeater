@@ -116,8 +116,8 @@
                                 在线模块 <i class="fa fa-heartbeat"></i>
                             </h5>
                             <div class="card-tools">
-                                <button type="button" class="btn btn-primary btn-sm float-right"
-                                        data-loading-text="searching" id="btn-install">
+                                <button type="button" class="btn btn-primary btn-sm float-right" data-toggle="tooltip"
+                                        data-loading-text="searching" id="btn-install" title="启动sandbox沙箱，植入到目标程序">
                                     安装模块
                                 </button>
                             </div>
@@ -156,7 +156,8 @@
                                         <th>应用名</th>
                                         <th>环境</th>
                                         <th>机器IP</th>
-                                        <th>sandbox沙箱端口</th>
+                                        <th>PID</th>
+                                        <th>沙箱端口</th>
                                         <th>版本号</th>
                                         <th>状态</th>
                                         <th>心跳时间</th>
@@ -170,6 +171,7 @@
                                             <td style="vertical-align: middle">$!data.appName</td>
                                             <td style="vertical-align: middle">$!{data.environment}</td>
                                             <td style="vertical-align: middle">$!data.ip</td>
+                                            <td style="vertical-align: middle">$!data.pid</td>
                                             <td style="vertical-align: middle">$!{data.port}</td>
                                             <td style="vertical-align: middle">$!{data.version}</td>
                                             <td style="vertical-align: middle">
@@ -184,7 +186,7 @@
                                             <td style="vertical-align: middle">
                                                 #if($!{data.status.desc}=='已激活')
                                                     <button class="btn btn-warning btn-xs btn-frozen" data-toggle="tooltip"
-                                                            title="冻结" data-ip="$!{data.ip}"
+                                                            title="冻结目标程序的所有的模块" data-ip="$!{data.ip}"
                                                             data-app="$!{data.appName}">冻结
                                                     </button>
                                                 #else
@@ -194,7 +196,7 @@
                                                     </button>
                                                 #end
                                                 <button class="btn btn-primary btn-xs btn-reload" data-toggle="tooltip"
-                                                        title="刷新插件" data-ip="$!{data.ip}"
+                                                        title="刷新插件：即重新加载插件jar包" data-ip="$!{data.ip}"
                                                         data-app="$!{data.appName}">刷新
                                                 </button>
                                             </td>
