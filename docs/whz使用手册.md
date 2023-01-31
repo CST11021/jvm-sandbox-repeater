@@ -114,7 +114,7 @@ create table module_config (
 # 注：这里VM options参数，而不是Program arguments
 -Xdebug
 -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000
--javaagent:${HOME}/sandbox/lib/sandbox-agent.jar=server.port=8820\;server.ip=0.0.0.0
+-javaagent:${HOME}/sandbox/lib/sandbox-agent.jar=server.port=8820;server.ip=0.0.0.0
 -Dapp.name=repeater
 -Dapp.env=daily
 ```
@@ -123,7 +123,7 @@ create table module_config (
 
 ```sh
 注：这里也可以直接通过jar包启动，命令如下：
-java -jar ~/.sandbox-module/repeater-bootstrap.jar ${JAVA_HOME}/bin/java -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000 \-javaagent:${HOME}/sandbox/lib/sandbox-agent.jar=server.port=8820\;server.ip=0.0.0.0 \-Dapp.name=gs-rest-service \-Dapp.env=daily \-jar gs-rest-service-0.1.0.jar
+java -jar ~/.sandbox-module/repeater-bootstrap.jar ${JAVA_HOME}/bin/java -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000 \-javaagent:${HOME}/sandbox/lib/sandbox-agent.jar=server.port=8820;server.ip=0.0.0.0 \-Dapp.name=gs-rest-service \-Dapp.env=daily \-jar gs-rest-service-0.1.0.jar
 ```
 
 ②访问控制台页面: http://localhost:8001/config/list.htm 
@@ -201,7 +201,7 @@ curl -s 'http://127.0.0.1:8001/regress/slogan?Repeat-TraceId-X=12700000000115603
 4.启动应用进程：
 	①执行：java -jar gs-rest-service-0.1.0.jar
 	${JAVA_HOME}/bin/java -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000 \
-     -javaagent:${HOME}/sandbox/lib/sandbox-agent.jar=server.port=8820\;server.ip=0.0.0.0 \
+     -javaagent:${HOME}/sandbox/lib/sandbox-agent.jar=server.port=8820;server.ip=0.0.0.0 \
      -Dapp.name=gs-rest-service \
      -Dapp.env=daily \
      -jar gs-rest-service-0.1.0.jar
@@ -250,7 +250,7 @@ curl -s 'http://127.0.0.1:8001/regress/slogan?Repeat-TraceId-X=12700000000115603
 ```shell
 -Xdebug
 -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8100
--javaagent:${HOME}/sandbox/lib/sandbox-agent.jar=server.port=8820\;server.ip=0.0.0.0
+-javaagent:${HOME}/sandbox/lib/sandbox-agent.jar=server.port=8820;server.ip=0.0.0.0
 -Dapp.name=gs-rest-service
 -Dapp.env=daily
 ```
